@@ -1,5 +1,5 @@
 import Link from "next/link";
-import classes from "../../styles/Footer.module.css";
+import classes from "@/styles/Footer.module.css";
 
 export default function Footer() {
     return (

@@ -1,12 +1,15 @@
 import Head from "next/head";
 import { Fragment } from "react";
+import {useRouter} from 'next/router';
 
 import Header from "./Header";
 import Footer from "./Footer";
+import ShowCase from "../ShowCase";
 
-import classes from "../../styles/Layout.module.css";
+import classes from "@/styles/Layout.module.css";
 
 export default function Layout({ title, description, keywords, children }) {
+  const router=useRouter();
   return (
     <Fragment>
       <Head>
@@ -15,6 +18,7 @@ export default function Layout({ title, description, keywords, children }) {
         <meta name="keywords" content={keywords} />
       </Head>
       <Header/>
+      {router.pathname==="/"&&<ShowCase/>}
       <div className={classes.container}>{children}</div>
       <Footer/>
     </Fragment>

@@ -10,6 +10,7 @@ html,
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.8;
+  position: relative;
 }
 
 a {
@@ -64,3 +65,4 @@ h1 {
 .btn-icon svg {
   margin-right: 5px;
 }
+
