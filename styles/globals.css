@@ -27,7 +27,9 @@ h1 {
 }
 
 .btn {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: red;
   color: #fff;
   padding: 10px 20px;
@@ -64,5 +66,12 @@ h1 {
 
 .btn-icon svg {
   margin-right: 5px;
+}
+
+.loading-btn{
+  background-color: white;
+  border: 1px solid #510077;
+ padding-top: 0;
+ padding-bottom: 0;
 }
 
