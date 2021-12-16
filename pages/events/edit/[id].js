@@ -14,8 +14,10 @@ import ImageUpload from "@/components/ImageUpload";
 
 import "react-toastify/dist/ReactToastify.css";
 import classes from "@/styles/Form.module.css";
+import { useHttpClient } from "hooks/http-hook";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-export default function EditEventPage({ event,token }) {
+export default function EditEventPage({ event, token }) {
   const { name, performers, venue, address, date, time, description } = event;
   const [values, setValues] = useState({
     name,
@@ -34,6 +36,7 @@ export default function EditEventPage({ event,token }) {
   const [showModal, setShowModal] = useState(false);
 
   const router = useRouter();
+  const { error, isLoading, sendRequest } = useHttpClient();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,39 +51,32 @@ export default function EditEventPage({ event,token }) {
     if (hasEmptyField) {
       toast.error("please fill in all inputs");
     } else {
-      const res = await fetch(`${API_URL}/events/${event.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:`Bearer ${token}`
-        },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) {
-        if(res.status===401||res.status===403){
-          toast.error("Unauthorized");
-          return;
-        }
-        toast.error("something went wrong");
-      } else {
-        const event = await res.json();
-        router.push(`/events/${event.slug}`);
+      try {
+        const updatedEvent = await sendRequest(
+          `${API_URL}/events/${event.id}`,
+          "PUT",
+          JSON.stringify(values),
+          {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
+        );
+        router.push(`/events/${updatedEvent.slug}`);
+      } catch (error) {
+        toast.error(error.message);
       }
     }
   };
 
-  const imageUploaded=async (e)=>{
-      const res=await fetch(`${API_URL}/events/${event.id}`);
-
-      const data=await res.json();
-
-      if(!res.ok){
-          toast.error(data.error)
-      }else{
-        setImagePreview(data.image.formats.thumbnail.url);
-        setShowModal(false)
-      }
-  }
+  const imageUploaded = async (e) => {
+    try {
+      const data = await sendRequest(`${API_URL}/events/${event.id}`);
+      setImagePreview(data.image.formats.thumbnail.url);
+      setShowModal(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
   return (
     <Layout title="Update Event">
       <Link href="/events">Go Back</Link>
@@ -160,7 +156,13 @@ export default function EditEventPage({ event,token }) {
           ></textarea>
         </div>
 
-        <input type="submit" value="Update Event" className="btn" />
+        {!isLoading&&<button type="submit" className="btn" disabled={isLoading}>
+          Update Event
+        </button>}
+
+        {isLoading&&<button type="submit" className="btn loading-btn" disabled={isLoading}>
+          <LoadingSpinner/>
+        </button>}
       </form>
 
       <h2>Event Image</h2>
@@ -179,7 +181,11 @@ export default function EditEventPage({ event,token }) {
       </div>
 
       <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <ImageUpload eventId={event.id} imageUploaded={imageUploaded} token={token}/>
+        <ImageUpload
+          eventId={event.id}
+          imageUploaded={imageUploaded}
+          token={token}
+        />
       </Modal>
     </Layout>
   );
@@ -187,10 +193,11 @@ export default function EditEventPage({ event,token }) {
 
 export async function getServerSideProps(context) {
   const {
-    params: { id },req
+    params: { id },
+    req,
   } = context;
 
- const {token}=parseCookies(req);
+  const { token } = parseCookies(req);
 
   const res = await fetch(`${API_URL}/events/${id}`);
 
@@ -199,7 +206,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       event,
-      token
+      token,
     },
   };
 }
